@@ -18,7 +18,7 @@
 
         async function loadFavorites() {
             try {
-                const response = await fetch('https://ваш-домен/get_favorites', {
+                const response = await fetch('https://folder1992.github.io/get_favorites', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ user_id })
@@ -52,7 +52,7 @@
 
         async function removeFavorite(videoId) {
             try {
-                const response = await fetch('https://ваш-домен/remove_favorite', {
+                const response = await fetch('https://folder1992.github.io/remove_favorite', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ user_id, video_id: videoId })
