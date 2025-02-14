@@ -1,87 +1,54 @@
+<!-- index.html -->
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Управление избранным</title>
+    <title>Мои избранные видео</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            background-color: #f9f9f9;
-        }
-        .video-item {
-            background: #fff;
-            border: 1px solid #ddd;
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 5px;
-        }
-        .video-item button {
-            background: #ff4d4d;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 3px;
-            cursor: pointer;
-        }
-        .video-item button:hover {
-            background: #cc0000;
-        }
+        .video-item { margin: 10px; padding: 10px; border: 1px solid #ccc; }
     </style>
 </head>
 <body>
     <h1>Мои избранные видео</h1>
-    <div id="favorites-list"></div>
+    <div id="videos"></div>
 
     <script>
-        // Инициализация Telegram Web Apps
-        const tg = window.Telegram.WebApp;
+        Telegram.WebApp.ready();
+        const user_id = Telegram.WebApp.initDataUnsafe.user.id;
 
-        // Функция для загрузки избранных видео
         async function loadFavorites() {
-            const response = await fetch('/get_favorites', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ user_id: tg.initDataUnsafe.user.id }),
-            });
-            const data = await response.json();
-            renderFavorites(data);
-        }
-
-        // Функция для отображения избранных видео
-        function renderFavorites(favorites) {
-            const list = document.getElementById('favorites-list');
-            list.innerHTML = '';
-            favorites.forEach(video => {
-                const item = document.createElement('div');
-                item.className = 'video-item';
-                item.innerHTML = `
-                    <p>🎬 Видео ID: ${video.id}</p>
-                    <button onclick="removeFavorite(${video.id})">🗑 Удалить</button>
-                `;
-                list.appendChild(item);
-            });
-        }
-
-        // Функция для удаления видео из избранного
-        async function removeFavorite(videoId) {
-            const response = await fetch('/remove_favorite', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ user_id: tg.initDataUnsafe.user.id, video_id: videoId }),
-            });
-            if (response.ok) {
-                loadFavorites(); // Перезагружаем список
+            try {
+                const response = await fetch('https://ваш-домен/get_favorites', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id })
+                });
+                
+                const videos = await response.json();
+                const container = document.getElementById('videos');
+                
+                videos.forEach(video => {
+                    container.innerHTML += `
+                        <div class="video-item">
+                            <video src="https://api.telegram.org/file/bot${TOKEN}/${video.file_id}" controls width="300"></video>
+                            <button onclick="removeFavorite(${video.id})">Удалить</button>
+                        </div>
+                    `;
+                });
+            } catch (error) {
+                console.error('Ошибка:', error);
             }
         }
 
-        // Загружаем избранные видео при загрузке страницы
-        tg.ready();
+        async function removeFavorite(videoId) {
+            await fetch('https://ваш-домен/remove_favorite', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id, video_id: videoId })
+            });
+            location.reload();
+        }
+
         loadFavorites();
     </script>
 </body>
